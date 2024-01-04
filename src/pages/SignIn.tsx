@@ -9,14 +9,22 @@ import { z } from "zod"
 import { zodResolver } from "@hookform/resolvers/zod"
 import ErrorMessage from "../components/ErrorMessage"
 import { singInSchema } from "../schemas/SignInSchema"
+import { signIn } from "../services/user"
+import Cookies from "js-cookie"
 
 export default function SignIn() {
 	const {register, handleSubmit, formState:{errors}} = useForm({
 		resolver: zodResolver(singInSchema) 
 	});
 
-	const handleFormSubmit = (data: any) => {
-		console.log(data);
+    async function handleFormSubmit(data: any) {
+        try {
+           const token = await signIn(data);
+		   Cookies.set("token", token.data, {expires: 1});
+		   console.log(Cookies.get('token'));
+        } catch(error) {
+            console.log(error.message)
+        }
 	}
 
     return (

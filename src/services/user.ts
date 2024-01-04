@@ -7,3 +7,8 @@ export function signup(data: any) {
     const response = axios.post(`${BASE_URL}/signup`, data);
     return response;
 }
+
+export function signIn(data: any) {
+    const response = axios.post(`${BASE_URL}/signin`, data);
+    return response;
+}
