@@ -8,11 +8,7 @@ import { useForm } from "react-hook-form"
 import { z } from "zod"
 import { zodResolver } from "@hookform/resolvers/zod"
 import ErrorMessage from "../components/ErrorMessage"
-
-const singInSchema = z.object({
-	email: z.string().min(1,"O e-mail é obrigatório").email().toLowerCase(),
-	password: z.string().min(6, "A senha precisa de no mínimo 6 caracteres"),
-})
+import { singInSchema } from "../schemas/SignInSchema"
 
 export default function SignIn() {
 	const {register, handleSubmit, formState:{errors}} = useForm({
