@@ -7,10 +7,13 @@ import { BiPlusCircle, BiMinusCircle } from "react-icons/bi"
 import Cookies from "js-cookie"
 import { useEffect, useState } from "react"
 import { loggedUser } from "../services/user"
+import { findAllTransactions } from "../services/transactions"
+import { TransactionEnum } from "../enums/TransactionEnum"
 
 export const Home = () => {
     const navigate = useNavigate();
-    const [user, setUser] = useState("Fulano");
+    const [user, setUser] = useState("");
+    const [transactions, setTransactions] = useState([]);
 
     function validateToken(){
         const token = Cookies.get('token')
@@ -21,6 +24,15 @@ export const Home = () => {
 
     function signOut() {
         Cookies.remove('token');
+    }
+
+    async function getAllTransactions() {
+        try {
+            const response = await findAllTransactions();
+            setTransactions(response.data || []);
+        } catch(error) {
+            console.log(error)
+        }
     }
 
     async function getLoggedUser() {
@@ -35,6 +47,7 @@ export const Home = () => {
     useEffect(() => {
         validateToken()
         getLoggedUser()
+        getAllTransactions()
     },[])
 
     return (
@@ -49,11 +62,24 @@ export const Home = () => {
                 </div>
             </header>
             <section className="bg-zinc-300 p-4 w-full h-full rounded flex items-center justify-center">
-                <p>No Transactions Available</p>
+               {transactions.length ? (
+                <ul className="w-full h-full flex flex-col justify-between">
+                    <div className="h-[17rem] overflow-auto p-3">
+                        {transactions.map((transaction: any, index) => {
+                            return (
+                            <li key={index} className="flex justify-between items-start w-full">
+                                {transaction.description}
+                            </li>
+                            )
+                        })}
+                    </div>
+                    <li>Balance</li>
+                </ul>
+               ) : <p>No Transactions Available</p>}
             </section>
             <footer className="w-full pt-2 flex gap-2 text-white text-lg font-bold">
-                <Button type={ButtonTypeEnum.BUTTON} text="New Input" icon={<BiPlusCircle/>}></Button>
-                <Button type={ButtonTypeEnum.BUTTON} text="New Output" icon={<BiMinusCircle/>}></Button>
+                <Button type={ButtonTypeEnum.BUTTON} text="New Input" icon={<BiPlusCircle/>} transaction={TransactionEnum.INPUT}></Button>
+                <Button type={ButtonTypeEnum.BUTTON} text="New Output" icon={<BiMinusCircle/>} transaction={TransactionEnum.OUTPUT}></Button>
             </footer>
         </main>
     )
