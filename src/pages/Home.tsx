@@ -9,11 +9,13 @@ import { useEffect, useState } from "react"
 import { loggedUser } from "../services/user"
 import { findAllTransactions } from "../services/transactions"
 import { TransactionEnum } from "../enums/TransactionEnum"
+import dayjs from "dayjs"
 
 export const Home = () => {
     const navigate = useNavigate();
     const [user, setUser] = useState("");
     const [transactions, setTransactions] = useState([]);
+    const [balance, setBalance] = useState(0);
 
     function validateToken(){
         const token = Cookies.get('token')
@@ -30,6 +32,7 @@ export const Home = () => {
         try {
             const response = await findAllTransactions();
             setTransactions(response.data || []);
+            calculate(response.data);
         } catch(error) {
             console.log(error)
         }
@@ -42,6 +45,16 @@ export const Home = () => {
         } catch(err) {
             console.log(err)
         }
+    }
+
+    async function calculate(transactions: any) {
+        let total = 0;
+
+        transactions.map((transaction: any) => {
+            transaction.type === "input" ? (total += transaction.value) : (total -= transaction.value);
+        })
+
+        setBalance(total);
     }
 
     useEffect(() => {
@@ -68,12 +81,25 @@ export const Home = () => {
                         {transactions.map((transaction: any, index) => {
                             return (
                             <li key={index} className="flex justify-between items-start w-full">
-                                {transaction.description}
+                                <span className="flex items-center gap-2">
+                                    <span className="text-base text-zinc-500">
+                                        {dayjs(transaction.createdAt).format("DD/MM")}
+                                    </span>
+                                    {transaction.description}
+                                </span>
+                                <span className={`
+                                    ${transaction.type === "input" ? "text-green-700" : "text-red-500"}
+                                `}>{transaction.value}</span>
                             </li>
                             )
                         })}
                     </div>
-                    <li>Balance</li>
+                    <li className="flex justify-between items-start w-full px-3">
+                        <span>Balance: </span>
+                        <span className={`
+                            ${balance > 0 ? "text-green-700" : "text-red-500"}
+                            `}>R$ {balance}</span>
+                    </li>
                 </ul>
                ) : <p>No Transactions Available</p>}
             </section>
